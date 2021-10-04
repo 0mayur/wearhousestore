@@ -16,10 +16,6 @@ const app = express();
 app.use(express.json()); //body parsing.//Now this object that we add to the body tab in Postman, what will be sent in an object (key-value) on the request object. We extract that from request.body.
 //But in order for parsing this JSON data that we get on the request object from the frontend/Postman, we need to add another middleware in server.js.
 
-app.get("/", (req, res) => {
-  res.send("API is running");
-});
-
 app.use("/api/products", productRoutes); //we use app.use because we split our file get is now on router object
 //in this we are saying that if we go on this route then send it to the productRoutes is middleware
 app.use("/api/users", userRoutes);
@@ -33,6 +29,18 @@ app.get("/api/config/paypal", (req, res) => {
 //create static folder directory name
 const __dirname = path.resolve();
 app.use("/uploads", express.static(path.join(__dirname, "/uploads")));
+
+if (process.env.NODE_ENV === "production") {
+  app.use(express.static(path.join(__dirname, "/frontend/build")));
+
+  app.get("*", (req, res) => {
+    res.sendFile(path.resolve(__dirname, "frontend", "build", "index.html"));
+  });
+} else {
+  app.get("/", (req, res) => {
+    res.send("API is running!");
+  });
+}
 
 //Error middlewares
 app.use(notFound);
